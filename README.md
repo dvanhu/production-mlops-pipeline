@@ -10,8 +10,6 @@
   <a href="https://github.com/dvanhu/production-mlops-pipeline/actions">
     <img src="https://img.shields.io/github/actions/workflow/status/dvanhu/production-mlops-pipeline/ci.yml?branch=main&label=CI%2FCD&logo=githubactions&logoColor=white&color=2088FF" alt="CI/CD Status"/>
   </a>
-  <a href="https://github.com/dvanhu/production-mlops-pipeline/commits/main">
-    <img src="https://img.shields.io/github/last-commit/dvanhu/production-mlops-pipeline?label=Last%20Commit&logo=github&logoColor=white&color=181717" alt="Last Commit"/>
   </a>
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white" alt="Python 3.9+"/>
   <img src="https://img.shields.io/badge/ZenML-Orchestration-9F2BFF?logo=zenml&logoColor=white" alt="ZenML"/>
