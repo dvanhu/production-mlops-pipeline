@@ -312,6 +312,26 @@ The Docker image published on each successful CI run is the versioned artifact c
 
 ---
 
+## Limitations
+ 
+- **Local stack only.** The configured ZenML stack uses local orchestration and a local artifact store. There is no distributed compute, remote artifact storage, or cloud orchestrator configured. Scaling to larger datasets requires migrating to a remote stack (e.g., Kubernetes orchestrator, S3/GCS artifact store).
+- **Local MLflow model server.** The deployment step serves models via a local MLflow REST server, which is not suitable for high-availability production workloads. Replacing it with a scalable serving layer (BentoML, Seldon, SageMaker, or similar) requires modifying the deployment step and ZenML model deployer integration.
+- **Static drift reference.** The Evidently validator compares incoming batches against the training split saved at ETL time. There is no rolling reference window. As the real-world data distribution evolves over time, the reference dataset will become less representative without a manual update.
+- **No feature store.** Features are recomputed from raw data on every pipeline run. There is no versioned feature registry, which creates redundant computation and no caching of intermediate feature artifacts across runs.
+- **Unpinned dependencies.** The `requirements.txt` specifies `zenml[jupyter,server]`, `mlflow`, and `evidently` without version pins. This can cause reproducibility issues if upstream packages introduce breaking changes.
+- **Batch inference not validated in CI.** The CI skip means the batch inference pipeline is not exercised on every push. Regressions in that pipeline will not be caught by the current workflow.
+---
+ 
+## Future Improvements
+ 
+- Pin all dependencies in `requirements.txt` with exact version specifiers and add a `pip-compile`-based dependency update workflow
+- Migrate to a remote ZenML stack (cloud artifact store + Kubernetes orchestrator) to support larger datasets and parallel step execution
+- Add a smoke-test mode in CI that runs the batch inference pipeline against a synthetic data fixture with a mocked deployment endpoint, eliminating the current CI skip
+- Implement rolling reference dataset updates in the drift detection step so that baselines remain representative as the upstream data distribution changes
+- Integrate a feature store to avoid redundant feature computation and to version feature definitions alongside model definitions
+- Replace the local MLflow model server with a production-grade serving layer that supports health checks, autoscaling, and request logging
+- Generate a model card artifact at promotion time that captures training data provenance, evaluation results by data segment, and known failure modes
+---
 ## Author
 
 **dvanhu**
