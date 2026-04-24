@@ -20,20 +20,37 @@ jobs:
         with:
           python-version: "3.12"
 
-      # ⚡ CACHE
+      # -------------------------
+      # Cache pip
+      # -------------------------
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
+      # -------------------------
+      # Cache ZenML
+      # -------------------------
+      - name: Cache ZenML
+        uses: actions/cache@v4
+        with:
+          path: .zen
+          key: ${{ runner.os }}-zenml
+
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # -------------------------
+      # ZenML Init (safe)
+      # -------------------------
       - name: Initialize ZenML
-        run: zenml init || true
+        run: |
+          if [ ! -d ".zen" ]; then
+            zenml init
+          fi
 
       - name: Setup Stack
         run: |
@@ -46,25 +63,35 @@ jobs:
             -dv evidently_validator || true
           zenml stack set mlops_stack
 
+      # -------------------------
+      # Run pipeline (host)
+      # -------------------------
       - name: Run Pipeline
         run: python run.py
 
-      # -------------------------------
-      # Docker Build (Artifact Creation)
-      # -------------------------------
+      # -------------------------
+      # Build Docker
+      # -------------------------
       - name: Build Docker Image
         run: docker build -t $IMAGE_NAME:latest .
 
-      # -------------------------------
-      # Docker Login
-      # -------------------------------
+      # -------------------------
+      # Run Docker (FIXED)
+      # -------------------------
+      - name: Run Docker Container
+        run: |
+          docker run --rm \
+            -v $(pwd)/mlruns:/app/mlruns \
+            $IMAGE_NAME:latest
+
+      # -------------------------
+      # Push Docker Image
+      # -------------------------
       - name: Login to Docker Hub
         run: |
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \
+          -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      # -------------------------------
-      # Push Image with Versioning
-      # -------------------------------
       - name: Push Docker Image
         run: |
           docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ github.sha }}
