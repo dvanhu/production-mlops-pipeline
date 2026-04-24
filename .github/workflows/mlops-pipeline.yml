@@ -10,6 +10,9 @@ jobs:
   run-mlops-pipeline:
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/mlops-pipeline
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -43,3 +46,19 @@ jobs:
       - name: Run Pipeline
         run: |
           python run.py
+      # -------------------------------
+      - name: Build Docker Image
+        run: |
+          docker build -t $IMAGE_NAME:latest .
+      # -------------------------------
+      - name: Run Docker Container
+        run: |
+          docker run --rm $IMAGE_NAME:latest
+      # -------------------------------
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      # -------------------------------
+      - name: Push Docker Image
+        run: |
+          docker push $IMAGE_NAME:latest
