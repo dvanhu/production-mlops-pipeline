@@ -18,31 +18,33 @@ def model_trainer(
     target: str,
     name: str,
 ) -> Annotated[ClassifierMixin, ArtifactConfig(name="model", is_model_artifact=True)]:
-    """Train model and log with MLflow (CI-safe version)."""
+    """Train model and log with MLflow (CI-safe, production-ready)."""
 
     # -----------------------------
-    # Ensure MLflow works everywhere
+    # MLflow Setup (robust)
     # -----------------------------
     os.makedirs("mlruns", exist_ok=True)
 
     mlflow.set_tracking_uri("file:./mlruns")
     mlflow.set_experiment("e2e_use_case_training")
 
+    # Enable autologging (VERY IMPORTANT)
+    mlflow.sklearn.autolog()
+
     # -----------------------------
-    # Train model
+    # Train + Log
     # -----------------------------
     logger.info(f"Training model {model}...")
-    model.fit(
-        dataset_trn.drop(columns=[target]),
-        dataset_trn[target],
-    )
 
-    # -----------------------------
-    # Log model (CRITICAL)
-    # -----------------------------
-    with mlflow.start_run():
+    with mlflow.start_run(run_name=f"{name}_training_run"):
+        model.fit(
+            dataset_trn.drop(columns=[target]),
+            dataset_trn[target],
+        )
+
+        # Explicit model logging (extra safety)
         mlflow.sklearn.log_model(model, "model")
 
-    logger.info("Model logged successfully to MLflow")
+    logger.info("Model trained and logged successfully to MLflow")
 
     return model
