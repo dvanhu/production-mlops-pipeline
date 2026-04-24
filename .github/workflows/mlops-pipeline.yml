@@ -1,0 +1,46 @@
+name: MLOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  run-mlops-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install "zenml[server]" mlflow evidently
+
+      - name: ⚙️ Initialize ZenML
+        run: |
+          zenml init || true
+
+      - name: 🔧 Setup Stack
+        run: |
+          zenml experiment-tracker register mlflow_tracker --flavor=mlflow || true
+          zenml data-validator register evidently_validator --flavor=evidently || true
+          zenml stack register mlops_stack \
+            -o default \
+            -a default \
+            -e mlflow_tracker \
+            -dv evidently_validator || true
+          zenml stack set mlops_stack
+
+      - name: 🚀 Run Pipeline
+        run: |
+          cd my-mlops-project
+          python run.py
