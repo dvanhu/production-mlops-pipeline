@@ -1,6 +1,5 @@
 # Production MLOps Pipeline
-
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/dvanhu/production-mlops-pipeline/ci.yml?branch=main&label=CI%2FCD&logo=githubactions&logoColor=white&color=2088FF)](https://github.com/dvanhu/production-mlops-pipeline/actions)
+[![MLOps Pipeline](https://github.com/dvanhu/production-mlops-pipeline/actions/workflows/mlops-pipeline.yml/badge.svg)](https://github.com/dvanhu/production-mlops-pipeline/actions/workflows/mlops-pipeline.yml)
 [![Docker Pulls](https://img.shields.io/docker/pulls/dvanhu/mlops-pipeline?label=Docker%20Pulls&logo=docker&logoColor=white&color=2496ED)](https://hub.docker.com/r/dvanhu/mlops-pipeline)
 [![Docker Image Size](https://img.shields.io/docker/image-size/dvanhu/mlops-pipeline/latest?label=Image%20Size&logo=docker&logoColor=white&color=2496ED)](https://hub.docker.com/r/dvanhu/mlops-pipeline)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
