@@ -1,1 +1,3 @@
-zenml[server, jupyter]
+zenml[jupyter,server]
+mlflow
+evidently
