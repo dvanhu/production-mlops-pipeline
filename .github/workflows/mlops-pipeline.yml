@@ -49,16 +49,22 @@ jobs:
       - name: Run Pipeline
         run: python run.py
 
+      # -------------------------------
+      # Docker Build (Artifact Creation)
+      # -------------------------------
       - name: Build Docker Image
         run: docker build -t $IMAGE_NAME:latest .
 
-      - name: Run Docker Container
-        run: docker run --rm $IMAGE_NAME:latest
-
+      # -------------------------------
+      # Docker Login
+      # -------------------------------
       - name: Login to Docker Hub
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+      # -------------------------------
+      # Push Image with Versioning
+      # -------------------------------
       - name: Push Docker Image
         run: |
           docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ github.sha }}
