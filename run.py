@@ -1,10 +1,44 @@
 import os
+import click
+from datetime import datetime as dt
+from typing import Optional
 
-# Detect CI environment (GitHub Actions automatically sets CI=true)
+from zenml.logger import get_logger
+
+from pipelines import (
+    e2e_use_case_batch_inference,
+    e2e_use_case_training,
+    e2e_use_case_deployment,
+)
+
+logger = get_logger(__name__)
+
+# Detect CI environment
 IS_CI = os.getenv("CI", "false").lower() == "true"
 
 
-def main(...):
+@click.command()
+@click.option("--no-cache", is_flag=True, default=False)
+@click.option("--no-drop-na", is_flag=True, default=False)
+@click.option("--no-normalize", is_flag=True, default=False)
+@click.option("--drop-columns", default=None, type=str)
+@click.option("--test-size", default=0.2, type=float)
+@click.option("--min-train-accuracy", default=0.8, type=float)
+@click.option("--min-test-accuracy", default=0.8, type=float)
+@click.option("--fail-on-accuracy-quality-gates", is_flag=True, default=False)
+@click.option("--only-inference", is_flag=True, default=False)
+def main(
+    no_cache: bool,
+    no_drop_na: bool,
+    no_normalize: bool,
+    drop_columns: Optional[str],
+    test_size: float,
+    min_train_accuracy: float,
+    min_test_accuracy: float,
+    fail_on_accuracy_quality_gates: bool,
+    only_inference: bool,
+):
+    """Main entry point for pipeline execution."""
 
     pipeline_args = {}
 
@@ -73,3 +107,7 @@ def main(...):
     )
 
     e2e_use_case_batch_inference.with_options(**pipeline_args)()
+
+
+if __name__ == "__main__":
+    main()
