@@ -11,25 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🐍 Setup Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install "zenml[server]" mlflow evidently
 
-      - name: ⚙️ Initialize ZenML
+      - name: Initialize ZenML
         run: |
           zenml init || true
 
-      - name: 🔧 Setup Stack
+      - name: Setup Stack
         run: |
           zenml experiment-tracker register mlflow_tracker --flavor=mlflow || true
           zenml data-validator register evidently_validator --flavor=evidently || true
@@ -40,7 +40,6 @@ jobs:
             -dv evidently_validator || true
           zenml stack set mlops_stack
 
-      - name: 🚀 Run Pipeline
+      - name: Run Pipeline
         run: |
-          cd my-mlops-project
           python run.py
