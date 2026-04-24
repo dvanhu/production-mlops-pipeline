@@ -28,7 +28,7 @@ logger = get_logger(__name__)
 experiment_tracker = Client().active_stack.experiment_tracker
 
 
-@step(experiment_tracker=experiment_tracker.name)
+@step
 def model_evaluator(
     model: ClassifierMixin,
     dataset_trn: pd.DataFrame,
