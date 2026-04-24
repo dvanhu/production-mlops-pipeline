@@ -20,18 +20,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      # -------------------------
       # Cache pip
-      # -------------------------
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
-      # -------------------------
       # Cache ZenML
-      # -------------------------
       - name: Cache ZenML
         uses: actions/cache@v4
         with:
@@ -43,9 +39,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # -------------------------
-      # ZenML Init + Stack
-      # -------------------------
+      # Setup ZenML
       - name: Setup ZenML Stack
         run: |
           zenml init || true
@@ -61,42 +55,14 @@ jobs:
 
           zenml stack set mlops_stack
 
-      # -------------------------
-      # Run pipeline (host)
-      # -------------------------
       - name: Run Pipeline
         run: python run.py
 
-      # -------------------------
       # Build Docker
-      # -------------------------
       - name: Build Docker Image
         run: docker build -t $IMAGE_NAME:latest .
 
-      # -------------------------
-      # Run Docker (CRITICAL FIX)
-      # -------------------------
-      - name: Run Docker Container
-        run: |
-          docker run --rm \
-            -v $(pwd)/mlruns:/app/mlruns \
-            $IMAGE_NAME:latest \
-            bash -c "
-              zenml init || true &&
-              zenml experiment-tracker register mlflow_tracker --flavor=mlflow || true &&
-              zenml data-validator register evidently_validator --flavor=evidently || true &&
-              zenml stack register mlops_stack \
-                -o default \
-                -a default \
-                -e mlflow_tracker \
-                -dv evidently_validator || true &&
-              zenml stack set mlops_stack &&
-              python run.py
-            "
-
-      # -------------------------
-      # Push Docker Image
-      # -------------------------
+      # Push Docker
       - name: Login to Docker Hub
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \
