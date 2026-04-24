@@ -17,7 +17,6 @@
   <img src="https://img.shields.io/badge/Evidently-Drift%20Detection-ED7D31?logoColor=white" alt="Evidently"/>
   <img src="https://img.shields.io/badge/scikit--learn-Modeling-F7931E?logo=scikitlearn&logoColor=white" alt="scikit-learn"/>
   <a href="https://github.com/dvanhu/production-mlops-pipeline/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/dvanhu/production-mlops-pipeline?label=License&color=22C55E" alt="License"/>
   </a>
 </p>
 
