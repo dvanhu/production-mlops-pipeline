@@ -1,8 +1,9 @@
+import os
+import mlflow
 import pandas as pd
 from sklearn.base import ClassifierMixin
 from zenml import step
 from zenml.logger import get_logger
-import mlflow
 
 logger = get_logger(__name__)
 
@@ -17,7 +18,15 @@ def model_evaluator(
     min_test_accuracy: float = 0.0,
     fail_on_accuracy_quality_gates: bool = False,
 ) -> None:
-    """Evaluate a trained model."""
+    """Evaluate model and log metrics (CI-safe MLflow version)."""
+
+    # -----------------------------
+    # MLflow Setup (MUST MATCH TRAINER)
+    # -----------------------------
+    os.makedirs("mlruns", exist_ok=True)
+
+    mlflow.set_tracking_uri("file:./mlruns")
+    mlflow.set_experiment("e2e_use_case_training")
 
     # -----------------------------
     # Accuracy Calculation
@@ -35,11 +44,9 @@ def model_evaluator(
     logger.info(f"Test accuracy={tst_acc*100:.2f}%")
 
     # -----------------------------
-    active_run = mlflow.active_run()
-
-    if active_run is None:
-        logger.warning("No active MLflow run found. Skipping MLflow logging.")
-    else:
+    # Log Metrics (same run context style)
+    # -----------------------------
+    with mlflow.start_run(run_name="model_evaluation_run"):
         mlflow.log_metric("training_accuracy_score", trn_acc)
         mlflow.log_metric("testing_accuracy_score", tst_acc)
 
