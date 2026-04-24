@@ -44,27 +44,25 @@ jobs:
           pip install -r requirements.txt
 
       # -------------------------
-      # ZenML Init
+      # ZenML Init + Stack
       # -------------------------
-      - name: Initialize ZenML
+      - name: Setup ZenML Stack
         run: |
-          if [ ! -d ".zen" ]; then
-            zenml init
-          fi
+          zenml init || true
 
-      - name: Setup Stack
-        run: |
           zenml experiment-tracker register mlflow_tracker --flavor=mlflow || true
           zenml data-validator register evidently_validator --flavor=evidently || true
+
           zenml stack register mlops_stack \
             -o default \
             -a default \
             -e mlflow_tracker \
             -dv evidently_validator || true
+
           zenml stack set mlops_stack
 
       # -------------------------
-      # Run locally
+      # Run pipeline (host)
       # -------------------------
       - name: Run Pipeline
         run: python run.py
@@ -76,13 +74,25 @@ jobs:
         run: docker build -t $IMAGE_NAME:latest .
 
       # -------------------------
-      # Run Docker (FIXED)
+      # Run Docker (CRITICAL FIX)
       # -------------------------
       - name: Run Docker Container
         run: |
           docker run --rm \
             -v $(pwd)/mlruns:/app/mlruns \
-            $IMAGE_NAME:latest
+            $IMAGE_NAME:latest \
+            bash -c "
+              zenml init || true &&
+              zenml experiment-tracker register mlflow_tracker --flavor=mlflow || true &&
+              zenml data-validator register evidently_validator --flavor=evidently || true &&
+              zenml stack register mlops_stack \
+                -o default \
+                -a default \
+                -e mlflow_tracker \
+                -dv evidently_validator || true &&
+              zenml stack set mlops_stack &&
+              python run.py
+            "
 
       # -------------------------
       # Push Docker Image
