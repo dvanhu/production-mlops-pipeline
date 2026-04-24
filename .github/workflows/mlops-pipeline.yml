@@ -3,8 +3,6 @@ name: MLOps Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   run-mlops-pipeline:
@@ -22,14 +20,20 @@ jobs:
         with:
           python-version: "3.12"
 
+      # ⚡ CACHE
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Initialize ZenML
-        run: |
-          zenml init || true
+        run: zenml init || true
 
       - name: Setup Stack
         run: |
@@ -43,21 +47,20 @@ jobs:
           zenml stack set mlops_stack
 
       - name: Run Pipeline
-        run: |
-          python run.py
-      # -------------------------------
+        run: python run.py
+
       - name: Build Docker Image
-        run: |
-          docker build -t $IMAGE_NAME:latest .
-      # -------------------------------
+        run: docker build -t $IMAGE_NAME:latest .
+
       - name: Run Docker Container
-        run: |
-          docker run --rm $IMAGE_NAME:latest
-      # -------------------------------
+        run: docker run --rm $IMAGE_NAME:latest
+
       - name: Login to Docker Hub
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-      # -------------------------------
+
       - name: Push Docker Image
         run: |
+          docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ github.sha }}
           docker push $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${{ github.sha }}
